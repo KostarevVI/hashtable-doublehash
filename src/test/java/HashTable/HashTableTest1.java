@@ -39,9 +39,16 @@ public class HashTableTest1 {
     public void delete() throws Exception {
         firstTable.push(1);
         firstTable.delete(1);
-        firstTable.push(13);
+        firstTable.push(2);
+        firstTable.delete(2);
+        firstTable.push(17);
+        firstTable.print();
         assertFalse(firstTable.contains(1));
-        assertTrue(firstTable.delete(13));
+        assertFalse(firstTable.contains(2));
+        assertTrue(firstTable.contains(17)); //заменяет удаленную ранее ячейку с цифрой 1
+        firstTable.push(1);
+        firstTable.print();
+        assertTrue(firstTable.contains(1));
     }
 
     @Test
@@ -118,5 +125,42 @@ public class HashTableTest1 {
         firstTable.print();
         assertTrue(firstTable.contains(1));
         assertEquals(64, firstTable.getSize());
+    }
+
+    @Test
+    public void get() {
+        firstTable.push(5);
+        firstTable.print();
+        assertEquals((Integer) 5 ,firstTable.get(11));
+        assertNull(firstTable.get(1));
+        assertNull(firstTable.get(100));
+    }
+
+    @Test
+    public void toStringTest() throws Exception {
+        firstTable.push(1);
+        firstTable.push(2);
+        firstTable.push(4);
+        firstTable.push(3);
+        firstTable.print();
+        assertEquals("[4, 3, 2, 1]", firstTable.toString());
+    }
+
+    @Test
+    public void cloneTest() {
+        for(int i=0;i<40;i++){
+            firstTable.push(i);
+        }
+        for(int i=0;i<40;i++){
+            if(i%2==0){
+                firstTable.delete(i);
+            }
+        }
+        for(int i=35;i<46;i++){
+            firstTable.push(i);
+        }
+        firstTable.print();
+        secondTable = firstTable.clone();
+        assertEquals(firstTable, secondTable);
     }
 }

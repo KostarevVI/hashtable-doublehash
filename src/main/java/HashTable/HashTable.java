@@ -36,8 +36,10 @@ public class HashTable {
         this.size *= 2;
         this.cellsArray = new Cell[this.size];
         for (Cell cell : oldCells) {
-            for (int i = 0; i < cell.getAmount(); i++) {
-                this.push(cell.getValue());
+            if (cell != null && !cell.isDeleted()) {
+                for (int i = 0; i < cell.getAmount(); i++) {
+                    this.push(cell.getValue());
+                }
             }
         }
         System.out.println("Расширили таблицу до " + this.size + " ячеек");
@@ -51,18 +53,15 @@ public class HashTable {
      */
 
     public boolean push(int value) {
-        int h1 = hashOfValue1(value);
-        int h2 = hashOfValue2(value);
-        int endHash;
         for (int i = 0; i < this.size; i++) {
-            endHash = (h1 + i * h2) % this.size;
-            if (cellsArray[endHash] != null && cellsArray[endHash].getValue().equals(value) &&
-                    !cellsArray[endHash].isDeleted()) {
-                cellsArray[endHash].incAmount();
+            int valHash = hashOfValue(value, i);
+            if (cellsArray[valHash] != null && cellsArray[valHash].getValue().equals(value) &&
+                    !cellsArray[valHash].isDeleted()) {
+                cellsArray[valHash].incAmount();
                 System.out.println("Увеличил на 1");
                 return true;
-            } else if (cellsArray[endHash] == null || cellsArray[endHash].isDeleted()) {
-                cellsArray[endHash] = new Cell(endHash, value);
+            } else if (cellsArray[valHash] == null || cellsArray[valHash].isDeleted()) {
+                cellsArray[valHash] = new Cell(valHash, value);
                 System.out.println("Добавил новую ячейку");
                 return true;
             }
@@ -80,18 +79,15 @@ public class HashTable {
 
     public boolean delete(int value) {
         if (this.contains(value)) {
-            int h1 = hashOfValue1(value);
-            int h2 = hashOfValue2(value);
-            int endHash;
             for (int i = 0; i < this.size; i++) {
-                endHash = (h1 + i * h2) % this.size;
-                if (cellsArray[endHash].getValue().equals(value)) {
-                    if (cellsArray[endHash].getAmount() > 1) {
-                        cellsArray[endHash].decAmount();
+                int valHash = hashOfValue(value, i);
+                if (cellsArray[valHash].getValue().equals(value)) {
+                    if (cellsArray[valHash].getAmount() > 1) {
+                        cellsArray[valHash].decAmount();
                         System.out.println("Уменьшил на 1");
                         return true;
                     } else {
-                        cellsArray[endHash].delete();
+                        cellsArray[valHash].delete();
                         System.out.println("Удалил");
                         return true;
                     }
@@ -110,13 +106,10 @@ public class HashTable {
      */
 
     public Boolean contains(int value) {
-        int h1 = hashOfValue1(value);
-        int h2 = hashOfValue2(value);
-        int endHash;
         for (int i = 0; i < this.size; i++) {
-            endHash = (h1 + i * h2) % this.size;
-            if (cellsArray[endHash] != null) {
-                if (cellsArray[endHash].getValue().equals(value) && !cellsArray[endHash].isDeleted()) {
+            int valHash = hashOfValue(value, i);
+            if (cellsArray[valHash] != null) {
+                if (cellsArray[valHash].getValue().equals(value) && !cellsArray[valHash].isDeleted()) {
                     return true;
                 }
             }
@@ -125,14 +118,29 @@ public class HashTable {
     }
 
     /**
+     * Returns the value which mapped (or not) to key
+     *
+     * @param key Received key from user or else
+     * @return If value exists - returns value, else null
+     */
+
+    public Integer get(int key) {
+        if (key < this.size && this.cellsArray[key] != null && !this.cellsArray[key].isDeleted()) {
+            return this.cellsArray[key].getValue();
+        } else {
+            return null;
+        }
+    }
+
+    /**
      * Printing in console all Cells in HashTable (debugging info)
      */
 
     public void print() {
         for (int i = 0; i < this.size; i++) {
-            if(cellsArray[i] != null) {
+            if (cellsArray[i] != null) {
                 System.out.println(cellsArray[i].toString());
-            }else{
+            } else {
                 System.out.println("Null");
             }
         }
@@ -179,12 +187,10 @@ public class HashTable {
         return Objects.hash(this, this.cellsArray.length);
     }
 
-    private int hashOfValue1(Integer value) {
-        return (value.hashCode() * 31) % (this.cellsArray.length);
-    }
-
-    private int hashOfValue2(Integer value) {
-        return value % (this.cellsArray.length - 1) + 1;
+    private int hashOfValue(Integer value, int i) {
+        int h1 = (value.hashCode() * 31) % (this.cellsArray.length);
+        int h2 = value % (this.cellsArray.length - 1) + 1;
+        return (h1 + i * h2) % this.size;
     }
 
 
@@ -211,6 +217,47 @@ public class HashTable {
             }
         System.out.println("Таблицы равны");
         return true;
+    }
+
+    /**
+     * Override of toString for HashTable
+     *
+     * @return String of values in braces
+     */
+
+    @Override
+    public String toString() {
+        if (!this.isEmpty()) {
+            StringBuilder cellsStr = new StringBuilder("[");
+            for (int i = 0; i < this.size; i++) {
+                if (cellsArray[i] != null && !cellsArray[i].isDeleted()) {
+                    cellsStr.append(cellsArray[i].getValue().toString()).append(", ");
+                }
+            }
+            cellsStr.setLength(cellsStr.length() - 2);
+            cellsStr.append("]");
+            return cellsStr.toString();
+        } else {
+            return "[]";
+        }
+    }
+
+    /**
+     * Clones the current Hash table
+     *
+     * @return Clone of current Hash table
+     */
+
+    public HashTable clone() {
+        HashTable newHashTable = new HashTable();
+        if (this.size >= 0) {
+            while (newHashTable.getSize() < this.getSize()) {
+                newHashTable.size *= 2;
+            }
+            newHashTable.cellsArray = new Cell[newHashTable.size];
+            System.arraycopy(this.cellsArray, 0, newHashTable.cellsArray, 0, this.size);
+        }
+        return newHashTable;
     }
 }
 
