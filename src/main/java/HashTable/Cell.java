@@ -5,7 +5,7 @@ import java.util.Objects;
 public class Cell {
 
     private Integer key;
-    private Integer value;
+    private Object value;
     private Integer amount; //да, я хочу хранить кол-во значений, ведь это моя таблица и я её сделал
     private Boolean deleted;
 
@@ -16,7 +16,7 @@ public class Cell {
      * @param value Received value
      */
 
-    public Cell(Integer key, Integer value) {
+    public Cell(Integer key, Object value) {
         this.key = key;
         this.value = value;
         this.amount = 1;
@@ -39,7 +39,7 @@ public class Cell {
      * @return Value in Cell
      */
 
-    public Integer getValue() {
+    public Object getValue() {
         return value;
     }
 

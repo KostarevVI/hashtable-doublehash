@@ -15,77 +15,84 @@ public class HashTableTest1 {
     public void after() {
         firstTable.clear();
         secondTable.clear();
+        thirdTable.clear();
         System.out.println("---------------------");
     }
 
     @Test
-    public void push() throws Exception {
-        firstTable.push(990);
+    public void put() throws Exception {
+        firstTable.put(1, 990);
         firstTable.print();
-        assertTrue(firstTable.contains(990));
-        firstTable.push(990);
-        firstTable.push(990);
-        firstTable.delete(990);
-        firstTable.push(16);
-        firstTable.push(32);
-        firstTable.push(64);
+        assertTrue(firstTable.containsValue(990));
+        assertTrue(firstTable.containsKey(1));
+        firstTable.put(1, 990);
+        firstTable.put(1, 990);
+        assertEquals((Integer) 3, firstTable.getCell(1).getAmount());
+        firstTable.delete(1);
+        firstTable.put(2, 16);
+        firstTable.put(3, 32);
+        firstTable.put(6, 64);
         firstTable.print();
-        assertTrue(firstTable.contains(990) && firstTable.contains(16) &&
-                firstTable.contains(32) && firstTable.contains(64));
-        assertFalse(firstTable.contains(0));
+        Cell testCell = new Cell(1, 990);
+        testCell.incAmount();
+        assertTrue(firstTable.getCell(1).equals(testCell) &&
+                firstTable.getCell(2).equals(new Cell(2, 16)) &&
+                firstTable.getCell(3).equals(new Cell(3, 32)) &&
+                firstTable.getCell(6).equals(new Cell(6, 64)));
+        assertFalse(firstTable.containsKey(0));
     }
 
     @Test
     public void delete() throws Exception {
-        firstTable.push(1);
+        firstTable.put(1, 99);
         firstTable.delete(1);
-        firstTable.push(2);
+        firstTable.put(2, 0);
         firstTable.delete(2);
-        firstTable.push(17);
+        assertFalse(firstTable.containsKey(1));
+        assertFalse(firstTable.containsKey(2));
+        firstTable.put(2, 17);
         firstTable.print();
-        assertFalse(firstTable.contains(1));
-        assertFalse(firstTable.contains(2));
-        assertTrue(firstTable.contains(17)); //заменяет удаленную ранее ячейку с цифрой 1
-        firstTable.push(1);
+        assertTrue(firstTable.containsValue(17)); //заменяет удаленную ранее ячейку с цифрой 1
+        firstTable.put(2, 8);
         firstTable.print();
-        assertTrue(firstTable.contains(1));
+        assertTrue(firstTable.containsValue(8));
     }
 
     @Test
     public void getSize() throws Exception {
         for (int i = 0; i < 100; i++) {
-            firstTable.push(i);
+            firstTable.put(i, i + 1);
         }
         assertEquals(128, firstTable.getSize());
     }
 
     @Test
-    public void contains() throws Exception {
-        firstTable.push(6);
-        firstTable.push(256);
-        firstTable.push(256);
+    public void containsKey() throws Exception {
+        firstTable.put(6, 10);
+        firstTable.put(256, 15);
+        firstTable.put(256, 15);
         firstTable.print();
         firstTable.delete(256);
         firstTable.print();
-        assertTrue(firstTable.contains(6));
-        assertTrue(firstTable.contains(256));
-        assertFalse(firstTable.contains(999));
+        assertTrue(firstTable.containsKey(6) && firstTable.getCell(256).getAmount() == 1);
+        assertTrue(firstTable.containsKey(256));
+        assertFalse(firstTable.containsKey(999));
     }
 
     @Test
     public void clear() throws Exception {
-        firstTable.push(1);
-        firstTable.push(9998);
+        firstTable.put(1, 0);
+        firstTable.put(9998, 939999);
         firstTable.print();
         firstTable.clear();
         firstTable.print();
-        assertFalse(firstTable.contains(1));
-        assertFalse(firstTable.contains(9999));
+        assertFalse(firstTable.containsKey(1));
+        assertFalse(firstTable.containsKey(9999));
     }
 
     @Test
     public void isEmpty() throws Exception {
-        firstTable.push(2);
+        firstTable.put(2, 2);
         assertFalse(firstTable.isEmpty());
         firstTable.delete(2);
         firstTable.print();
@@ -96,13 +103,13 @@ public class HashTableTest1 {
     @Test
     public void equals() throws Exception {
         int notHashtable = 13;
-        firstTable.push(256);
-        secondTable.push(256);
-        firstTable.push(5);
-        secondTable.push(5);
-        firstTable.push(1);
-        secondTable.push(1);
-        firstTable.push(2);
+        firstTable.put(256, 1);
+        secondTable.put(256, 1);
+        firstTable.put(5, 2);
+        secondTable.put(5, 2);
+        firstTable.put(1, 3);
+        secondTable.put(1, 3);
+        firstTable.put(2, 4);
         firstTable.print();
         secondTable.print();
         assertFalse(firstTable.equals(thirdTable));
@@ -121,43 +128,43 @@ public class HashTableTest1 {
     @Test
     public void rehash() throws Exception {
         for (int i = 0; i < 50; i++)
-            firstTable.push(i);
+            firstTable.put(i, i + 1);
         firstTable.print();
-        assertTrue(firstTable.contains(1));
+        assertTrue(firstTable.containsKey(1));
         assertEquals(64, firstTable.getSize());
     }
 
     @Test
     public void get() {
-        firstTable.push(5);
+        firstTable.put(11, 5);
         firstTable.print();
-        assertEquals((Integer) 5 ,firstTable.get(11));
+        assertEquals((Integer) 5, firstTable.getCell(11).getValue());
         assertNull(firstTable.get(1));
         assertNull(firstTable.get(100));
     }
 
     @Test
     public void toStringTest() throws Exception {
-        firstTable.push(1);
-        firstTable.push(2);
-        firstTable.push(4);
-        firstTable.push(3);
+        firstTable.put(1, 3);
+        firstTable.put(2, 4);
+        firstTable.put(4, 2);
+        firstTable.put(3, 1);
         firstTable.print();
-        assertEquals("[4, 3, 2, 1]", firstTable.toString());
+        assertEquals("[2, 1, 4, 3]", firstTable.toString());
     }
 
     @Test
     public void cloneTest() {
-        for(int i=0;i<40;i++){
-            firstTable.push(i);
+        for (int i = 0; i < 40; i++) {
+            firstTable.put(i, i + 1);
         }
-        for(int i=0;i<40;i++){
-            if(i%2==0){
+        for (int i = 0; i < 40; i++) {
+            if (i % 2 == 0) {
                 firstTable.delete(i);
             }
         }
-        for(int i=35;i<46;i++){
-            firstTable.push(i);
+        for (int i = 35; i < 46; i++) {
+            firstTable.put(i, i + 1);
         }
         firstTable.print();
         secondTable = firstTable.clone();

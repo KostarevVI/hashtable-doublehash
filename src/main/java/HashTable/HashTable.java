@@ -38,7 +38,7 @@ public class HashTable {
         for (Cell cell : oldCells) {
             if (cell != null && !cell.isDeleted()) {
                 for (int i = 0; i < cell.getAmount(); i++) {
-                    this.push(cell.getValue());
+                    this.put(cell.getKey(), cell.getValue());
                 }
             }
         }
@@ -52,42 +52,49 @@ public class HashTable {
      * @return If adding succeeds returns True, else False
      */
 
-    public boolean push(int value) {
+    public Object put(Integer key, Object value) {
         for (int i = 0; i < this.size; i++) {
-            int valHash = hashOfValue(value, i);
-            if (cellsArray[valHash] != null && cellsArray[valHash].getValue().equals(value) &&
-                    !cellsArray[valHash].isDeleted()) {
-                cellsArray[valHash].incAmount();
-                System.out.println("Увеличил на 1");
-                return true;
-            } else if (cellsArray[valHash] == null || cellsArray[valHash].isDeleted()) {
-                cellsArray[valHash] = new Cell(valHash, value);
+            int cellHash = hashOfKey(key, i);
+            if (cellsArray[cellHash] != null) {
+                if (cellsArray[cellHash].getValue().equals(value) &&
+                        cellsArray[cellHash].getKey().equals(key) && !cellsArray[cellHash].isDeleted()) {
+                    cellsArray[cellHash].incAmount();
+                    System.out.println("Увеличил на 1");
+                    return cellsArray[cellHash].getValue();
+                } else if (cellsArray[cellHash].isDeleted() || cellsArray[cellHash].getKey().equals(key)) {
+                    Object prevValue = cellsArray[cellHash].getValue();
+                    cellsArray[cellHash] = new Cell(cellHash, value);
+                    System.out.println("Заменил значение");
+                    return prevValue;
+                }
+            } else if (cellsArray[cellHash] == null) {
+                cellsArray[cellHash] = new Cell(key, value);
                 System.out.println("Добавил новую ячейку");
-                return true;
+                return null;
             }
         }
         this.rehash();  //требуется увеличить размер таблицы
-        return this.push(value);
+        return this.put(key, value);
     }
 
     /**
      * Deleting value in HashTable
      *
-     * @param value Received value from user or else
+     * @param key Received value from user or else
      * @return If deleting succeeds returns True, else False
      */
 
-    public boolean delete(int value) {
-        if (this.contains(value)) {
+    public boolean delete(int key) {
+        if (this.containsKey(key)) {
             for (int i = 0; i < this.size; i++) {
-                int valHash = hashOfValue(value, i);
-                if (cellsArray[valHash].getValue().equals(value)) {
-                    if (cellsArray[valHash].getAmount() > 1) {
-                        cellsArray[valHash].decAmount();
+                int cellHash = hashOfKey(key, i);
+                if (cellsArray[cellHash].getKey().equals(key)) {
+                    if (cellsArray[cellHash].getAmount() > 1) {
+                        cellsArray[cellHash].decAmount();
                         System.out.println("Уменьшил на 1");
                         return true;
                     } else {
-                        cellsArray[valHash].delete();
+                        cellsArray[cellHash].delete();
                         System.out.println("Удалил");
                         return true;
                     }
@@ -101,15 +108,33 @@ public class HashTable {
     /**
      * Searches for value in HashTable
      *
+     * @param key Received value from user or else
+     * @return If the search succeeds returns True, else False
+     */
+
+    public Boolean containsKey(int key) {
+        for (int i = 0; i < this.size; i++) {
+            int cellHash = hashOfKey(key, i);
+            if (cellsArray[cellHash] != null) {
+                if (cellsArray[cellHash].getKey().equals(key) && !cellsArray[cellHash].isDeleted()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Searches for value in HashTable
+     *
      * @param value Received value from user or else
      * @return If the search succeeds returns True, else False
      */
 
-    public Boolean contains(int value) {
+    public Boolean containsValue(int value) {
         for (int i = 0; i < this.size; i++) {
-            int valHash = hashOfValue(value, i);
-            if (cellsArray[valHash] != null) {
-                if (cellsArray[valHash].getValue().equals(value) && !cellsArray[valHash].isDeleted()) {
+            if (cellsArray[i] != null) {
+                if (!cellsArray[i].isDeleted() && cellsArray[i].getValue().equals(value)) {
                     return true;
                 }
             }
@@ -124,12 +149,35 @@ public class HashTable {
      * @return If value exists - returns value, else null
      */
 
-    public Integer get(int key) {
-        if (key < this.size && this.cellsArray[key] != null && !this.cellsArray[key].isDeleted()) {
-            return this.cellsArray[key].getValue();
-        } else {
-            return null;
+    public Object get(int key) {
+        for (int i = 0; i < this.size; i++) {
+            int cellHash = hashOfKey(key, i);
+            if (cellsArray[cellHash] != null) {
+                if (cellsArray[cellHash].getKey().equals(key) && !cellsArray[cellHash].isDeleted()) {
+                    return cellsArray[cellHash].getValue();
+                }
+            }
         }
+        return null;
+    }
+
+    /**
+     * Returns Cell in Hash table with key
+     *
+     * @param key Received key from user or else
+     * @return If Cell exists - returns Cell, else null
+     */
+
+    public Cell getCell(int key) {
+        for (int i = 0; i < this.size; i++) {
+            int cellHash = hashOfKey(key, i);
+            if (cellsArray[cellHash] != null) {
+                if (cellsArray[cellHash].getKey().equals(key) && !cellsArray[cellHash].isDeleted()) {
+                    return cellsArray[cellHash];
+                }
+            }
+        }
+        return null;
     }
 
     /**
@@ -187,9 +235,9 @@ public class HashTable {
         return Objects.hash(this, this.cellsArray.length);
     }
 
-    private int hashOfValue(Integer value, int i) {
-        int h1 = (value.hashCode() * 31) % (this.cellsArray.length);
-        int h2 = value % (this.cellsArray.length - 1) + 1;
+    private int hashOfKey(Integer key, int i) {
+        int h1 = (key.hashCode() * 31) % (this.cellsArray.length);
+        int h2 = key % (this.cellsArray.length - 1) + 1;
         return (h1 + i * h2) % this.size;
     }
 
