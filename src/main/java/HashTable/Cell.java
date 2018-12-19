@@ -1,10 +1,11 @@
 package HashTable;
 
+import java.util.Map;
 import java.util.Objects;
 
-public class Cell {
+public class Cell implements Map.Entry {
 
-    private Integer key;
+    private Object key;
     private Object value;
     private Integer amount; //да, я хочу хранить кол-во значений, ведь это моя таблица и я её сделал
     private Boolean deleted;
@@ -16,7 +17,7 @@ public class Cell {
      * @param value Received value
      */
 
-    public Cell(Integer key, Object value) {
+    public Cell(Object key, Object value) {
         this.key = key;
         this.value = value;
         this.amount = 1;
@@ -29,7 +30,8 @@ public class Cell {
      * @return Key in Cell
      */
 
-    public Integer getKey() {
+    @Override
+    public Object getKey() {
         return key;
     }
 
@@ -39,8 +41,23 @@ public class Cell {
      * @return Value in Cell
      */
 
+    @Override
     public Object getValue() {
         return value;
+    }
+
+    /**
+     * Overrides value in cell
+     *
+     * @param value Received value
+     * @return Returns prev value
+     */
+
+    @Override
+    public Object setValue(Object value) {
+        Object oldValue = this.value;
+        this.value = value;
+        return oldValue;
     }
 
     /**
@@ -119,7 +136,9 @@ public class Cell {
 
     @Override
     public int hashCode() {
-        return value != null ? key.hashCode() : 0;
+        int keyHash = this.getKey() == null ? 0 : this.getKey().hashCode();
+        int valueHash = this.getValue() == null ? 0 : this.getValue().hashCode();
+        return keyHash * valueHash;
     }
 
     /**

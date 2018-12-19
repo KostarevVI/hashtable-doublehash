@@ -28,7 +28,7 @@ public class HashTableTest1 {
         firstTable.put(1, 990);
         firstTable.put(1, 990);
         assertEquals((Integer) 3, firstTable.getCell(1).getAmount());
-        firstTable.delete(1);
+        firstTable.remove(1);
         firstTable.put(2, 16);
         firstTable.put(3, 32);
         firstTable.put(6, 64);
@@ -40,14 +40,16 @@ public class HashTableTest1 {
                 firstTable.getCell(3).equals(new Cell(3, 32)) &&
                 firstTable.getCell(6).equals(new Cell(6, 64)));
         assertFalse(firstTable.containsKey(0));
+        firstTable.put("foo", "bar");
+        assertTrue(firstTable.containsKey("foo"));
     }
 
     @Test
     public void delete() throws Exception {
         firstTable.put(1, 99);
-        firstTable.delete(1);
+        firstTable.remove(1);
         firstTable.put(2, 0);
-        firstTable.delete(2);
+        firstTable.remove(2);
         assertFalse(firstTable.containsKey(1));
         assertFalse(firstTable.containsKey(2));
         firstTable.put(2, 17);
@@ -63,7 +65,7 @@ public class HashTableTest1 {
         for (int i = 0; i < 100; i++) {
             firstTable.put(i, i + 1);
         }
-        assertEquals(128, firstTable.getSize());
+        assertEquals(128, firstTable.size());
     }
 
     @Test
@@ -72,7 +74,7 @@ public class HashTableTest1 {
         firstTable.put(256, 15);
         firstTable.put(256, 15);
         firstTable.print();
-        firstTable.delete(256);
+        firstTable.remove(256);
         firstTable.print();
         assertTrue(firstTable.containsKey(6) && firstTable.getCell(256).getAmount() == 1);
         assertTrue(firstTable.containsKey(256));
@@ -94,7 +96,7 @@ public class HashTableTest1 {
     public void isEmpty() throws Exception {
         firstTable.put(2, 2);
         assertFalse(firstTable.isEmpty());
-        firstTable.delete(2);
+        firstTable.remove(2);
         firstTable.print();
         assertTrue(firstTable.isEmpty());
         assertTrue(secondTable.isEmpty());
@@ -114,10 +116,10 @@ public class HashTableTest1 {
         secondTable.print();
         assertFalse(firstTable.equals(thirdTable));
         assertFalse(firstTable.equals(secondTable)); //первая таблица содержит все элементы второй и что-то ещё
-        secondTable.delete(1);
+        secondTable.remove(1);
         assertFalse(firstTable.equals(secondTable));
-        firstTable.delete(1);
-        firstTable.delete(2);
+        firstTable.remove(1);
+        firstTable.remove(2);
         firstTable.print();
         secondTable.print();
         assertTrue(firstTable.equals(secondTable));
@@ -131,7 +133,7 @@ public class HashTableTest1 {
             firstTable.put(i, i + 1);
         firstTable.print();
         assertTrue(firstTable.containsKey(1));
-        assertEquals(64, firstTable.getSize());
+        assertEquals(64, firstTable.size());
     }
 
     @Test
@@ -160,7 +162,7 @@ public class HashTableTest1 {
         }
         for (int i = 0; i < 40; i++) {
             if (i % 2 == 0) {
-                firstTable.delete(i);
+                firstTable.remove(i);
             }
         }
         for (int i = 35; i < 46; i++) {
@@ -169,5 +171,6 @@ public class HashTableTest1 {
         firstTable.print();
         secondTable = firstTable.clone();
         assertEquals(firstTable, secondTable);
+        firstTable.hashCode();
     }
 }
