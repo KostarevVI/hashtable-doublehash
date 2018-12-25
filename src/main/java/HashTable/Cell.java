@@ -3,10 +3,10 @@ package HashTable;
 import java.util.Map;
 import java.util.Objects;
 
-public class Cell implements Map.Entry {
+public class Cell<K, V> implements Map.Entry {
 
-    private Object key;
-    private Object value;
+    private K key;
+    private V value;
     private Integer amount; //да, я хочу хранить кол-во значений, ведь это моя таблица и я её сделал
     private Boolean deleted;
 
@@ -17,7 +17,7 @@ public class Cell implements Map.Entry {
      * @param value Received value
      */
 
-    public Cell(Object key, Object value) {
+    public Cell(K key, V value) {
         this.key = key;
         this.value = value;
         this.amount = 1;
@@ -31,7 +31,7 @@ public class Cell implements Map.Entry {
      */
 
     @Override
-    public Object getKey() {
+    public K getKey() {
         return key;
     }
 
@@ -42,9 +42,10 @@ public class Cell implements Map.Entry {
      */
 
     @Override
-    public Object getValue() {
+    public V getValue() {
         return value;
     }
+
 
     /**
      * Overrides value in cell
@@ -55,8 +56,8 @@ public class Cell implements Map.Entry {
 
     @Override
     public Object setValue(Object value) {
-        Object oldValue = this.value;
-        this.value = value;
+        V oldValue = this.value;
+        this.value = (V) value;
         return oldValue;
     }
 
@@ -117,15 +118,14 @@ public class Cell implements Map.Entry {
         if (obj == null) {
             return this.isDeleted();
         }
-        if (this.getClass() != obj.getClass())
-            return false;
         if (obj == this)
             return true;
-        Cell otherCell = (Cell) obj;
+        if (!(obj instanceof Map.Entry)) {
+            return false;
+        }
+        Map.Entry otherCell = (Map.Entry) obj;
         return Objects.equals(this.getValue(), otherCell.getValue()) &&
-                Objects.equals(this.getKey(), otherCell.getKey()) &&
-                Objects.equals(this.getAmount(), otherCell.getAmount()) &&
-                Objects.equals(this.isDeleted(), otherCell.isDeleted());
+                Objects.equals(this.getKey(), otherCell.getKey()) && !this.isDeleted();
     }
 
     /**
@@ -138,7 +138,7 @@ public class Cell implements Map.Entry {
     public int hashCode() {
         int keyHash = this.getKey() == null ? 0 : this.getKey().hashCode();
         int valueHash = this.getValue() == null ? 0 : this.getValue().hashCode();
-        return keyHash * valueHash;
+        return keyHash ^ valueHash;
     }
 
     /**

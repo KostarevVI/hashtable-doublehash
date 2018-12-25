@@ -2,9 +2,9 @@ package HashTable;
 
 import java.util.*;
 
-public class HashTable implements Map {
+public class HashTable<K, V> implements Map {
 
-    private Cell[] cellsArray;
+    private Cell<K, V>[] cellsArray;
     private int size;
 
     /**
@@ -43,23 +43,24 @@ public class HashTable implements Map {
      */
 
     @Override
-    public Object put(Object key, Object value) {
+    public V put(Object key, Object value) {
         for (int i = 0; i < this.size; i++) {
             int cellHash = hashOfKey(key, i);
             if (cellsArray[cellHash] != null) {
-                if (cellsArray[cellHash].getValue().equals(value) &&
+                if (cellsArray[cellHash].isDeleted() || (cellsArray[cellHash].getKey().equals(key) &&
+                        !cellsArray[cellHash].getValue().equals(value))) {
+                    V prevValue = cellsArray[cellHash].getValue();
+                    cellsArray[cellHash] = new Cell<>((K) key, (V) value);
+                    System.out.println("Заменил значение");
+                    return prevValue;
+                } else if (cellsArray[cellHash].getValue().equals(value) &&
                         cellsArray[cellHash].getKey().equals(key) && !cellsArray[cellHash].isDeleted()) {
                     cellsArray[cellHash].incAmount();
                     System.out.println("Увеличил на 1");
                     return cellsArray[cellHash].getValue();
-                } else if (cellsArray[cellHash].isDeleted() || cellsArray[cellHash].getKey().equals(key)) {
-                    Object prevValue = cellsArray[cellHash].getValue();
-                    cellsArray[cellHash] = new Cell(cellHash, value);
-                    System.out.println("Заменил значение");
-                    return prevValue;
                 }
             } else if (cellsArray[cellHash] == null) {
-                cellsArray[cellHash] = new Cell(key, value);
+                cellsArray[cellHash] = new Cell<>((K) key, (V) value);
                 System.out.println("Добавил новую ячейку");
                 return null;
             }
@@ -76,21 +77,19 @@ public class HashTable implements Map {
      */
 
     @Override
-    public Object remove(Object key) {
-        if (this.containsKey(key)) {
-            for (int i = 0; i < this.size; i++) {
-                int cellHash = hashOfKey(key, i);
-                if (cellsArray[cellHash].getKey().equals(key)) {
-                    if (cellsArray[cellHash].getAmount() > 1) {
-                        cellsArray[cellHash].decAmount();
-                        System.out.println("Уменьшил на 1");
-                        return cellsArray[cellHash].getValue();
-                    } else {
-                        cellsArray[cellHash].delete();
-                        cellsArray[cellHash].setValue(null);
-                        System.out.println("Удалил");
-                        return cellsArray[cellHash].getValue();
-                    }
+    public V remove(Object key) {
+        for (int i = 0; i < this.size; i++) {
+            int cellHash = hashOfKey(key, i);
+            if (cellsArray[cellHash].getKey().equals(key)) {
+                if (cellsArray[cellHash].getAmount() > 1) {
+                    cellsArray[cellHash].decAmount();
+                    System.out.println("Уменьшил на 1");
+                    return cellsArray[cellHash].getValue();
+                } else {
+                    cellsArray[cellHash].delete();
+                    cellsArray[cellHash].setValue(null);
+                    System.out.println("Удалил");
+                    return cellsArray[cellHash].getValue();
                 }
             }
         }
@@ -159,7 +158,7 @@ public class HashTable implements Map {
      */
 
     @Override
-    public Object get(Object key) {
+    public V get(Object key) {
         for (int i = 0; i < this.size; i++) {
             int cellHash = hashOfKey(key, i);
             if (cellsArray[cellHash] != null) {
@@ -178,7 +177,7 @@ public class HashTable implements Map {
      * @return If Cell exists - returns Cell, else null
      */
 
-    public Cell getCell(Object key) {
+    public Cell getCell(K key) {
         for (int i = 0; i < this.size; i++) {
             int cellHash = hashOfKey(key, i);
             if (cellsArray[cellHash] != null) {
@@ -224,8 +223,8 @@ public class HashTable implements Map {
      */
 
     @Override
-    public Set keySet() {
-        Set<Object> keysCol = new HashSet<>();
+    public Set<K> keySet() {
+        Set<K> keysCol = new HashSet<>();
         for (int i = 0; i < this.size; i++) {
             keysCol.add(cellsArray[i].getKey());
         }
@@ -239,8 +238,8 @@ public class HashTable implements Map {
      */
 
     @Override
-    public Collection values() {
-        List<Object> valuesCol = new ArrayList<>();
+    public Collection<V> values() {
+        List<V> valuesCol = new ArrayList<>();
         for (int i = 0; i < this.size; i++) {
             valuesCol.add(cellsArray[i].getValue());
         }
@@ -254,8 +253,14 @@ public class HashTable implements Map {
      */
 
     @Override
-    public Set<Entry> entrySet() {
-        return new HashSet<>(Arrays.asList(cellsArray).subList(0, this.size));
+    public Set<Map.Entry<K, V>> entrySet() {
+        Set<Map.Entry<K, V>> entrySet = new HashSet<>();
+        for (Cell cell : this.cellsArray) {
+            if (cell != null && !cell.isDeleted()) {
+                entrySet.add(cell);
+            }
+        }
+        return entrySet;
     }
 
     /**
@@ -266,7 +271,13 @@ public class HashTable implements Map {
 
     @Override
     public int size() {
-        return size;
+        int counter = 0;
+        for (Cell cell : this.cellsArray) {
+            if (cell != null && !cell.isDeleted()) {
+                counter++;
+            }
+        }
+        return counter;
     }
 
     /**
@@ -298,7 +309,7 @@ public class HashTable implements Map {
     public int hashCode() {
         int hashOfMap = 0;
         for (int i = 0; i < this.size; i++) {
-            if (cellsArray[i] != null) {
+            if (cellsArray[i] != null && !cellsArray[i].isDeleted()) {
                 hashOfMap += cellsArray[i].hashCode();
             }
         }
@@ -320,24 +331,31 @@ public class HashTable implements Map {
 
     @Override
     public boolean equals(Object obj) {
-        if (this==obj) {
+        if (this == obj) {
             return true;
         }
-        if (Objects.equals(obj,null) || this.getClass() != obj.getClass()) {
+        if (!(obj instanceof Map)) {
             return false;
         }
-        Map mapObj = (HashTable) obj;
+        Map mapObj = (Map) obj;
         List<Entry> thisEntries = new ArrayList<>(this.entrySet());
         List<Entry> objEntries = new ArrayList<>(mapObj.entrySet());
         if (thisEntries.size() != objEntries.size()) {
             System.out.println("Таблицы не равны");
             return false;
         }
-        for (int i = 0; i < this.size; i++)
-            if (!Objects.equals(thisEntries.get(i), objEntries.get(i))) {
+        for (int i = 0; i < thisEntries.size(); i++) {
+            boolean flag = false;
+            for (int j = 0; j < objEntries.size(); j++) {
+                if (thisEntries.get(i).equals(objEntries.get(j))) {
+                    flag = true;
+                }
+            }
+            if(!flag){
                 System.out.println("Таблицы не равны");
                 return false;
             }
+        }
         System.out.println("Таблицы равны");
         return true;
     }
@@ -375,7 +393,7 @@ public class HashTable implements Map {
     public HashTable clone() {
         HashTable newHashTable = new HashTable();
         if (this.size >= 0) {
-            while (newHashTable.size() < this.size()) {
+            while (newHashTable.size < this.size) {
                 newHashTable.size *= 2;
             }
             newHashTable.cellsArray = new Cell[newHashTable.size];

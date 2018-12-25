@@ -42,8 +42,6 @@ public class CellTest {
         Cell cell = new Cell(0, 13);
         Cell secondCell = new Cell(1, 0);
         Cell thirdCell = new Cell(0, 13);
-        Cell fourthCell = new Cell(0, 13);
-        fourthCell.incAmount();
         int notCell = 13;
         Cell voidCell = null;
         assertFalse(cell.equals(notCell));
@@ -51,7 +49,6 @@ public class CellTest {
         assertTrue(cell.equals(cell));
         assertFalse(cell.equals(secondCell));
         assertTrue(cell.equals(thirdCell));
-        assertFalse(cell.equals(fourthCell));
     }
 
     @Test

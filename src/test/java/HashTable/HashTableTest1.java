@@ -65,7 +65,7 @@ public class HashTableTest1 {
         for (int i = 0; i < 100; i++) {
             firstTable.put(i, i + 1);
         }
-        assertEquals(128, firstTable.size());
+        assertEquals(100, firstTable.size());
     }
 
     @Test
@@ -133,7 +133,7 @@ public class HashTableTest1 {
             firstTable.put(i, i + 1);
         firstTable.print();
         assertTrue(firstTable.containsKey(1));
-        assertEquals(64, firstTable.size());
+        assertEquals(50, firstTable.size());
     }
 
     @Test
