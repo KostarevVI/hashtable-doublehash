@@ -317,8 +317,11 @@ public class HashTable<K, V> implements Map {
     }
 
     private int hashOfKey(Object key, int i) {
-        int h1 = (key.hashCode() * 31) % (this.cellsArray.length);
-        int h2 = key.toString().hashCode() % (this.cellsArray.length - 1) + 1;
+        int h1 = (key.hashCode() * 31) % (this.size);
+        int h2 = key.toString().hashCode() % (this.size - 1) + 1;
+        if(h2 % 2 == 0){
+            h2++;
+        }
         return (h1 + i * h2) % this.size;
     }
 
