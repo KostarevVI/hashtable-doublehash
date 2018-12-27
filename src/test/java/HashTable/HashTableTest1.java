@@ -3,6 +3,9 @@ package HashTable;
 import org.junit.After;
 import org.junit.Test;
 
+import java.util.Map;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 public class HashTableTest1 {
@@ -165,12 +168,53 @@ public class HashTableTest1 {
                 firstTable.remove(i);
             }
         }
-        for (int i = 35; i < 46; i++) {
+        for (int i = 1; i < 46; i++) {
             firstTable.put(i, i + 1);
         }
         firstTable.print();
         secondTable = firstTable.clone();
         assertEquals(firstTable, secondTable);
         firstTable.hashCode();
+    }
+
+    @Test
+    public void iteratorsTest() {
+        firstTable.put(1, 3);
+        firstTable.put(2, 4);
+        Set set = firstTable.entrySet();
+        assertTrue(set.contains(new Cell(1, 3)));
+        firstTable.put(4, 2);
+        firstTable.put(3, 1);
+        assertTrue(set.contains(new Cell(3, 1)));
+        assertFalse(set.contains(new Cell(4, 0)));
+        firstTable.put(3, 15);
+        assertTrue(set.contains(new Cell(3, 15)));
+        assertFalse(set.contains(new Cell(3, 1)));
+
+        int sum;
+
+        sum = 0;
+        for(Object i: set){
+            System.out.println(i + " ");
+            sum++;
+        }
+        System.out.println();
+        assertEquals(4, sum);
+
+        sum = 0;
+        for(Object i: firstTable.keySet()){
+            System.out.print(i + " ");
+            sum++;
+        }
+        System.out.println();
+        assertEquals(4, sum);
+
+        sum = 0;
+        for(Object i: firstTable.values()){
+            System.out.print(i + " ");
+            sum++;
+        }
+        System.out.println();
+        assertEquals(4, sum);
     }
 }

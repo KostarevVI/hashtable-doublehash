@@ -3,7 +3,7 @@ package HashTable;
 import java.util.Map;
 import java.util.Objects;
 
-public class Cell<K, V> implements Map.Entry {
+public class Cell<K, V> implements Map.Entry<K, V> {
 
     private K key;
     private V value;
